@@ -1,5 +1,6 @@
 streamlit
 pymupdf
+sentencepiece
 transformers
 sentence-transformers
 scikit-learn
