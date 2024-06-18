@@ -26,4 +26,4 @@ jobs:
 
       - name: Check Streamlit app builds
         run: |
-          streamlit run app.py --headless
+          streamlit run app.py --server.headless true
