@@ -4,8 +4,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 class Chatbot:
     def __init__(self, corpus):
         self.vectorizer = TfidfVectorizer()
+        self.corpus_embeddings = self.vectorizer.fit_transform(corpus)
         self.corpus = corpus
-        self.corpus_embeddings = self.vectorizer.fit_transform(self.corpus)
 
     def retrieve_passages(self, query):
         query_embedding = self.vectorizer.transform([query])
