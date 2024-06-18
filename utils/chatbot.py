@@ -29,7 +29,7 @@ class Chatbot:
 
     def retrieve_passages(self, query):
         query_embedding = self.embedding_retriever.get_embedding(query)
-        if query_embedding.shape[0] > self.corpus_embeddings.shape[1]:
+        if query_embedding.shape[1] > self.corpus_embeddings.shape[1]:
             pca = PCA(n_components=self.corpus_embeddings.shape[1])
             query_embedding = pca.fit_transform(query_embedding)
 
