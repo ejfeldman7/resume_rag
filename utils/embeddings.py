@@ -1,4 +1,4 @@
-from sentence_transformers import SentenceTransformer
+from sentence_transformers import SentenceTransformer  # noqa
 from sklearn.metrics.pairwise import cosine_similarity
 
 

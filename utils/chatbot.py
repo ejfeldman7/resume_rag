@@ -1,6 +1,7 @@
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
+
 class Chatbot:
     def __init__(self, corpus):
         self.vectorizer = TfidfVectorizer()
@@ -13,5 +14,5 @@ class Chatbot:
         best_idx = similarity_scores.argmax()
         return self.corpus[best_idx]
 
-     def generate_response(self, passage, query):
+    def generate_response(self, passage, query):
         return f"Passage: {passage}\nQuery: {query}\n"
