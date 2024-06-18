@@ -1,12 +1,13 @@
 import logging
+import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-from utils.embeddings import EmbeddingRetriever
 from transformers import T5Tokenizer, T5ForConditionalGeneration  # noqa
-from utils.pdf_extract import PDFExtractor
-from sklearn.decomposition import PCA
 
-# Configure logging
+from utils.embeddings import EmbeddingRetriever
+from utils.pdf_extract import PDFExtractor
+
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -37,9 +38,13 @@ class Chatbot:
         logger.info(f"QE Shape: {query_embedding.shape}")
         logger.info(f"CE shape: {self.corpus_embeddings.shape}")
         if query_embedding.shape[1] > self.corpus_embeddings.shape[1]:
-            pca = PCA(n_components=self.corpus_embeddings.shape[1])
-            query_embedding = pca.fit_transform(query_embedding)
-
+            zeros_padding = np.zeros((query_embedding.shape[0], self.corpus_embeddings.shape[1] - query_embedding.shape[1]))
+            query_embedding = np.hstack((query_embedding, zeros_padding))
+        if query_embedding.shape[1] < self.corpus_embeddings.shape[1]:
+            zeros_padding = np.zeros((self.corpus_embeddings.shape[1], query_embedding.shape[0] - self.corpus_embeddings.shape[1]))
+            query_embedding = np.hstack((self.corpus_embeddings.shape[1], zeros_padding))
+        logger.info(f"QE Shape: {query_embedding.shape}")
+        logger.info(f"CE shape: {self.corpus_embeddings.shape}")
         scores = cosine_similarity(query_embedding, self.corpus_embeddings)[0]
         best_idx = scores.argmax()
         relevant_chunk = self.chunk_document()[best_idx]
