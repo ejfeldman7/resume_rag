@@ -37,8 +37,7 @@ class Chatbot:
         logger.info(f"QE Shape: {query_embedding.shape[1]}")
         logger.info(f"CE shape: {self.corpus_embeddings.shape[1]}")
         if query_embedding.shape[1] > self.corpus_embeddings.shape[1]:
-            n_components = min(query_embedding.shape[1], self.corpus_embeddings.shape[1])
-            pca = PCA(n_components=n_components)
+            pca = PCA(n_components=self.corpus_embeddings.shape[1])
             query_embedding = pca.fit_transform(query_embedding)
 
         scores = cosine_similarity(query_embedding, self.corpus_embeddings)[0]
