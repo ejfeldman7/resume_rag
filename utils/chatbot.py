@@ -1,3 +1,4 @@
+import logging
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from utils.embeddings import EmbeddingRetriever
@@ -5,9 +6,12 @@ from transformers import T5Tokenizer, T5ForConditionalGeneration  # noqa
 from utils.pdf_extract import PDFExtractor
 from sklearn.decomposition import PCA
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class Chatbot:
-    def __init__(self, pdf_path):
+    def __init__(self, pdf_path, logger=None):
         self.pdf_text = PDFExtractor.extract_text_from_pdf(pdf_path)
         self.embedding_retriever = EmbeddingRetriever()
         self.vectorizer = TfidfVectorizer()
@@ -15,6 +19,7 @@ class Chatbot:
         self.chunk_size = 1000  # Number of characters per chunk
         self.tokenizer = T5Tokenizer.from_pretrained("t5-small")
         self.model = T5ForConditionalGeneration.from_pretrained("t5-small")
+        self.logger = logger if logger else logging.getLogger(__name__)
 
     def chunk_document(self):
         chunks = []
@@ -29,6 +34,8 @@ class Chatbot:
 
     def retrieve_passages(self, query):
         query_embedding = self.embedding_retriever.get_embedding(query)
+        logger.info(f"QE Shape: {query_embedding.shape[1]}")
+        logger.info(f"CE shape: {self.corpus_embeddings.shape[1]}")
         if query_embedding.shape[1] > self.corpus_embeddings.shape[1]:
             n_components = min(query_embedding.shape[1], self.corpus_embeddings.shape[1])
             pca = PCA(n_components=n_components)
@@ -37,6 +44,7 @@ class Chatbot:
         scores = cosine_similarity(query_embedding, self.corpus_embeddings)[0]
         best_idx = scores.argmax()
         relevant_chunk = self.chunk_document()[best_idx]
+        logger.info(f"Query: {query}, Relevant Chunk: {relevant_chunk}")
         return relevant_chunk
 
     def generate_response(self, passage, query):
@@ -44,4 +52,5 @@ class Chatbot:
         input_ids = self.tokenizer.encode(input_text, return_tensors="pt", max_length=512, truncation=True)
         summary_ids = self.model.generate(input_ids)
         summary = self.tokenizer.decode(summary_ids[0], skip_special_tokens=True)
+        logger.info(f"Passage: {passage}, Query: {query}, Summary: {summary}")
         return f"Summary: {summary}\nQuery: {query}"
