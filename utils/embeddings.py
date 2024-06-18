@@ -1,9 +1,8 @@
-from sentence_transformers import SentenceTransformer # noqa
+from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 
-
 class EmbeddingRetriever:
-    def init(self):
+    def __init__(self):
         self.embedder = SentenceTransformer("all-MiniLM-L6-v2")
 
     def get_embedding(self, text):

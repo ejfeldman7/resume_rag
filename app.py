@@ -1,5 +1,4 @@
 import streamlit as st
-from utils.pdf_extract import PDFExtractor
 from utils.chatbot import Chatbot
 
 
