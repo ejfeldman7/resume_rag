@@ -1,0 +1,81 @@
+name: static-analysis
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  static-analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install python3 python3-pip -y
+          python3 -m pip install black flake8
+
+      - name: Lint files
+        run: |
+          flake8 .
+          black .
+
+
+Yes, you can extend your GitHub Actions workflow to include a task that checks if your streamlit_app.py file builds successfully. You can do this by adding a new job to the workflow that runs the Streamlit app to ensure there are no syntax errors or other issues that would prevent it from starting.
+
+Here's how you can update your GitHub Actions workflow:
+
+yaml
+Copy code
+name: static-analysis
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  static-analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install python3 python3-pip -y
+          python3 -m pip install black flake8
+
+      - name: Lint files
+        run: |
+          flake8 .
+          black .
+
+  build-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python3 -m pip install -r requirements.txt
+
+      - name: Check Streamlit app builds
+        run: |
+          streamlit run app.py --headless
