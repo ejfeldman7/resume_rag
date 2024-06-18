@@ -1,7 +1,7 @@
 import streamlit as st
-from pdf_extract import PDFExtractor
-from embeddings import EmbeddingRetriever
-from chatbot import Chatbot
+from resume_rag.utils.pdf_extract import PDFExtractor
+from resume_rag.utils.embeddings import EmbeddingRetriever
+from resume_rag.utils.chatbot import Chatbot
 
 
 pdf_path = "data/feldman_resume.pdf"
