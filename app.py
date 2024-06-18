@@ -10,7 +10,8 @@ resume_text = PDFExtractor.extract_text_from_pdf(pdf_path)
 retriever = EmbeddingRetriever()
 resume_embedding = retriever.get_embedding(resume_text)
 
-chatbot = Chatbot()
+corpus = [resume_text]
+chatbot = Chatbot(corpus)
 
 # Streamlit app
 st.title("Resume Chatbot")

@@ -1,14 +1,14 @@
-from transformers import RagTokenizer, RagRetriever, RagTokenForGeneration
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 class Chatbot:
-    def __init__(self):
-        self.tokenizer = RagTokenizer.from_pretrained("facebook/rag-token-base")
-        self.retriever = RagRetriever.from_pretrained("facebook/rag-token-base")
-        self.generator = RagTokenForGeneration.from_pretrained("facebook/rag-token-base")
+    def __init__(self, corpus):
+        self.vectorizer = TfidfVectorizer()
+        self.corpus = corpus
+        self.corpus_embeddings = self.vectorizer.fit_transform(self.corpus)
 
-    def generate_response(self, query, passage):
-        inputs = self.tokenizer(query, return_tensors="pt")
-        with torch.no_grad():
-            outputs = self.generator(**inputs, return_dict_in_generate=True)
-        return self.tokenizer.decode(outputs[0]["output_ids"], skip_special_tokens=True)
-
+    def retrieve_passages(self, query):
+        query_embedding = self.vectorizer.transform([query])
+        similarity_scores = cosine_similarity(query_embedding, self.corpus_embeddings)[0]
+        best_idx = similarity_scores.argmax()
+        return self.corpus[best_idx]
