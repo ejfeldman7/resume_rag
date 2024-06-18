@@ -4,7 +4,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 class EmbeddingRetriever:
     def __init__(self):
-        self.embedder = SentenceTransformer("paraphrase-MiniLM-L6-v2")
+        self.embedder = SentenceTransformer("distilbert-base-nli-stsb-mean-token")
 
     def get_embedding(self, text):
         return self.embedder.encode([text])
