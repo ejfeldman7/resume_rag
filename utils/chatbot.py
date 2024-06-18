@@ -30,7 +30,8 @@ class Chatbot:
     def retrieve_passages(self, query):
         query_embedding = self.embedding_retriever.get_embedding(query)
         if query_embedding.shape[1] > self.corpus_embeddings.shape[1]:
-            pca = PCA(n_components=self.corpus_embeddings.shape[1])
+            n_components = min(query_embedding.shape[1], self.corpus_embeddings.shape[1])
+            pca = PCA(n_components=n_components)
             query_embedding = pca.fit_transform(query_embedding)
 
         scores = cosine_similarity(query_embedding, self.corpus_embeddings)[0]
