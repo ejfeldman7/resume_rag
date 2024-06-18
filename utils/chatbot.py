@@ -1,7 +1,8 @@
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-from embeddings import EmbeddingRetriever
-from pdf_extract import PDFExtractor
+from utils.embeddings import EmbeddingRetriever
+from transformers import T5Tokenizer, T5ForConditionalGeneration  # noqa
+from utils.pdf_extract import PDFExtractor
 
 
 class Chatbot:
