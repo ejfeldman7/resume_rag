@@ -37,7 +37,7 @@ def chunk_text(text: str, chunk_size: int=100):
 
 
 @st.cache_data
-def load_preexisting_pdfs(chatbot: ResumeChatBot):
+def load_preexisting_pdfs(_chatbot: ResumeChatBot):
     '''
     Loads all pre-existing PDFs and creates FAISS index for each PDF
     Args:
