@@ -1,8 +1,6 @@
 streamlit
-pymupdf
-sentencepiece
+PyPDF2
 transformers
-sentence-transformers
-scikit-learn
 torch
-datasets
+faiss-cpu
+numpy
