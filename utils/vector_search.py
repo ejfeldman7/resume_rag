@@ -10,7 +10,7 @@ from utils.chatbot import ResumeChatBot
 
 
 @st.cache_data
-def load_or_create_faiss_index(pdf_path: str, chatbot: ResumeChatBot, is_upload: bool=False):
+def load_or_create_faiss_index(pdf_path: str, _chatbot: ResumeChatBot, is_upload: bool=False):
     '''
     Loads or creates FAISS index for the input PDF file
     Args:
@@ -30,7 +30,7 @@ def load_or_create_faiss_index(pdf_path: str, chatbot: ResumeChatBot, is_upload:
     else:
         pdf_text = pdf_helpers.extract_text_from_pdf(pdf_content)
         chunks = pdf_helpers.chunk_text(pdf_text)
-        embeddings = np.array([chatbot.get_embedding(chunk) for chunk in chunks])
+        embeddings = np.array([_chatbot.get_embedding(chunk) for chunk in chunks])
         faiss_index = create_faiss_index(embeddings)
 
         data = {
@@ -44,7 +44,7 @@ def load_or_create_faiss_index(pdf_path: str, chatbot: ResumeChatBot, is_upload:
         return data
 
 
-def find_most_similar_chunk_faiss(query: str, index: faiss.IndexFlatL2, chunks: str, chatbot: ResumeChatBot):
+def find_most_similar_chunk_faiss(query: str, index: faiss.IndexFlatL2, chunks: str, _chatbot: ResumeChatBot):
     '''
     Finds the most similar chunk to the input query using FAISS index
     Args:
@@ -55,7 +55,7 @@ def find_most_similar_chunk_faiss(query: str, index: faiss.IndexFlatL2, chunks: 
     Returns:
         str: Most similar chunk to the input query
     '''
-    query_embedding = chatbot.get_embedding(query).reshape(1, -1)
+    query_embedding = _chatbot.get_embedding(query).reshape(1, -1)
     _, indices = index.search(query_embedding, 1)
     return chunks[indices[0][0]]
 

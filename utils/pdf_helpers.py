@@ -49,7 +49,7 @@ def load_preexisting_pdfs(_chatbot: ResumeChatBot):
     for filename in os.listdir('data'):
         if filename.endswith('.pdf'):
             pdf_path = os.path.join('data', filename)
-            pdf_data[filename] = vector_search.load_or_create_faiss_index(pdf_path, chatbot)
+            pdf_data[filename] = vector_search.load_or_create_faiss_index(pdf_path, _chatbot)
     return pdf_data
 
 
