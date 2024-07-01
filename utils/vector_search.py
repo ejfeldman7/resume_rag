@@ -68,7 +68,7 @@ def find_most_similar_chunk_faiss(query: str, index: faiss.IndexFlatL2, chunks: 
     return chunks[indices[0][0]]
 
 
-def find_most_similar_chunks_faiss(query: str, index: faiss.IndexFlatL2, chunks: str, chatbot: ResumeChatBot, top_n: int = 3):
+def find_most_similar_chunks_faiss(query: str, index: faiss.IndexFlatL2, chunks: str, _chatbot: ResumeChatBot, top_n: int = 3):
     '''
     Finds the most similar top n chunks to the input query using FAISS index
     Args:
@@ -80,7 +80,7 @@ def find_most_similar_chunks_faiss(query: str, index: faiss.IndexFlatL2, chunks:
     Returns:
         str: Most similar chunk to the input query
     '''
-    query_embedding = chatbot.get_embedding(query).reshape(1, -1)
+    query_embedding = _chatbot.get_embedding(query).reshape(1, -1)
     _, indices = index.search(query_embedding, top_n)
     return [chunks[i] for i in indices[0]]
 
