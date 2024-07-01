@@ -113,7 +113,7 @@ Question: {question}
 Answer:"""
 
         inputs = self.tokenizer(prompt, return_tensors="pt", max_length=512, truncation=True)
-        outputs = self.model.generate(
+        outputs = self.generator.generate(
             **inputs,
             max_length=150,
             num_return_sequences=1,
@@ -123,12 +123,11 @@ Answer:"""
             top_p=0.95,
         )
         response = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
-
-        # Simple fact-checking
+        
         key_facts = self.extract_key_facts(response)
         for fact in key_facts:
             if fact.lower() not in context.lower():
-                response += "\n\nNote: I'm not entirely certain about some details in this response. Please verify against the original resume."
+                response += f"\n\nNote: Expected to something about {fact}, this answer may not be trustworthy."
                 break
 
         return response
