@@ -2,7 +2,7 @@ import logging
 from typing import Any
 
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
-from sentence_transformers import SentenceTransformer
+from sentence_transformers import SentenceTransformer  # type: ignore
 import torch
 import streamlit as st
 import numpy as np
@@ -16,7 +16,7 @@ class ResumeChatBot:
     @st.cache_resource
     def load_encoder(_model: str) -> Any:
         return SentenceTransformer(_model)
- 
+
     @staticmethod
     @st.cache_resource
     def load_generator(_model: str) -> Any:
@@ -26,7 +26,7 @@ class ResumeChatBot:
     @st.cache_resource
     def load_tokenizer(_model: str) -> Any:
         return AutoTokenizer.from_pretrained(_model)
-    
+
     def __init__(self, encoder: str = "paraphrase-MiniLM-L6-v2", generator: str = "google/flan-t5-small"):
         try:
             self.encoder = self.load_encoder(encoder)
@@ -80,15 +80,15 @@ class ResumeChatBot:
             query (str): Input query string
             chunks (list): List of chunk strings
             top_n (int): Number of top chunks to select
-        Returns:    
+        Returns:
             list: List of top N relevant chunks
         '''
         query_embedding = self.get_embedding(query)
         chunk_embeddings = [self.get_embedding(chunk) for chunk in chunks]
 
-        similarities = [np.dot(query_embedding, chunk_emb) / (np.linalg.norm(query_embedding) * np.linalg.norm(chunk_emb)) 
+        similarities = [np.dot(query_embedding, chunk_emb) / (np.linalg.norm(query_embedding) * np.linalg.norm(chunk_emb))
                         for chunk_emb in chunk_embeddings]
-        
+
         top_indices = np.argsort(similarities)[-top_n:]
         return [chunks[i] for i in top_indices]
 
@@ -123,7 +123,7 @@ Answer:"""
             top_p=0.95,
         )
         response = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
-        
+
         key_facts = self.extract_key_facts(response)
         for fact in key_facts:
             if fact.lower() not in context.lower():

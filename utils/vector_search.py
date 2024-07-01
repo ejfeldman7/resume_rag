@@ -11,7 +11,7 @@ from utils.chatbot import ResumeChatBot
 
 
 @st.cache_data
-def load_or_create_faiss_index(pdf_path_or_content: str, _chatbot: ResumeChatBot, is_upload: bool=False):
+def load_or_create_faiss_index(pdf_path_or_content: str, _chatbot: ResumeChatBot, is_upload: bool = False):
     '''
     Loads or creates FAISS index for the input PDF file
     Args:

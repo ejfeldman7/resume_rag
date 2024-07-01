@@ -26,7 +26,7 @@ def extract_text_from_pdf(pdf_file: str):
     return text
 
 
-def chunk_text(text: str, chunk_size: int=100):
+def chunk_text(text: str, chunk_size: int = 100):
     '''
     Converts input text string into chunks of specified size to be used for vectorization
     Args:
