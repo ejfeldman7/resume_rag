@@ -1,8 +1,9 @@
 import logging
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+from sentence_transformers import SentenceTransformer
 import torch
 import streamlit as st
-
+import numpy as np
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -10,15 +11,21 @@ logger = logging.getLogger(__name__)
 
 class ResumeChatBot:
     @st.cache_resource
-    def load_model(model_name):
-        return AutoModelForSeq2SeqLM.from_pretrained(model_name, torch_dtype=torch.float16, low_cpu_mem_usage=True)
+    def load_encoder(model: str):
+        return SentenceTransformer(model)
+    
+    @st.cache_resource
+    def load_generator(model: str):
+        return AutoModelForSeq2SeqLM.from_pretrained(model, torch_dtype=torch.float16, low_cpu_mem_usage=True)
 
-    def __init__(self, model_name: str = "google/flan-t5-base"):
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-        logger.info(f"Tokenizer for ({model_name}) loaded successfully")
-        self.model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
-        logger.info(f"Model ({model_name}) loaded successfully")
-        self.model.eval()
+    def __init__(self, encoder: str = "paraphrase-MiniLM-L6-v2", generator: str = "google/flan-t5-small"):
+        self.encoder = self.load_encoder(encoder)
+        logger.info(f"Encoder for ({encoder}) loaded successfully")
+        self.generator = self.load_generator(generator)
+        logger.info(f"Generator for ({generator}) loaded successfully")
+        self.tokenizer = AutoTokenizer.from_pretrained(encoder)
+        logger.info(f"Tokenizer for ({generator}) loaded successfully")
+        self.generator.eval()
 
     def extract_key_facts(self, text: str):
         '''
@@ -40,11 +47,26 @@ class ResumeChatBot:
             numpy.ndarray: Embedding for the input text
         '''
         logger.info(f"Getting embedding for text: {text[:10]}...")
-        inputs = self.tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=512)
-        with torch.no_grad():
-            logger.info("Generating torch embeddings for text")
-            outputs = self.model.encoder(**inputs, output_hidden_states=True)
-        return outputs.last_hidden_state.mean(dim=1).squeeze().numpy()
+        return self.encoder.encode(text)
+
+    def select_relevant_chunks(self, query: str, chunks: list, top_n: int = 3):
+        '''
+        Selects the top N relevant chunks based on the similarity with the input query
+        Args:
+            query (str): Input query string
+            chunks (list): List of chunk strings
+            top_n (int): Number of top chunks to select
+        Returns:    
+            list: List of top N relevant chunks
+        '''
+        query_embedding = self.get_embedding(query)
+        chunk_embeddings = [self.get_embedding(chunk) for chunk in chunks]
+
+        similarities = [np.dot(query_embedding, chunk_emb) / (np.linalg.norm(query_embedding) * np.linalg.norm(chunk_emb)) 
+                        for chunk_emb in chunk_embeddings]
+        
+        top_indices = np.argsort(similarities)[-top_n:]
+        return [chunks[i] for i in top_indices]
 
     @torch.no_grad()
     def get_response(self, context: str, question: str):
