@@ -16,7 +16,10 @@ def extract_text_from_pdf(pdf_file: str):
     Returns:
         str: Extracted text from the PDF file
     '''
-    pdf_reader = PdfReader(pdf_file)
+    if isinstance(pdf_file, str):
+        pdf_reader = PdfReader(pdf_file)
+    else:
+        pdf_reader = PdfReader(pdf_file)
     text = ""
     for page in pdf_reader.pages:
         text += page.extract_text()

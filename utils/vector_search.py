@@ -1,4 +1,5 @@
 import os
+import io
 
 import numpy as np
 import pickle
@@ -10,7 +11,7 @@ from utils.chatbot import ResumeChatBot
 
 
 @st.cache_data
-def load_or_create_faiss_index(pdf_path: str, _chatbot: ResumeChatBot, is_upload: bool=False):
+def load_or_create_faiss_index(pdf_path_or_content: str, _chatbot: ResumeChatBot, is_upload: bool=False):
     '''
     Loads or creates FAISS index for the input PDF file
     Args:
@@ -20,27 +21,34 @@ def load_or_create_faiss_index(pdf_path: str, _chatbot: ResumeChatBot, is_upload
     Returns:
         dict: Dictionary containing FAISS index and text chunks for the PDF
     '''
-    pdf_content = open(pdf_path, 'rb').read() if not is_upload else pdf_path.read()
+    if is_upload:
+        pdf_content = pdf_path_or_content.read()
+        pdf_file = io.BytesIO(pdf_content)
+    else:
+        with open(pdf_path_or_content, 'rb') as f:
+            pdf_content = f.read()
+        pdf_file = io.BytesIO(pdf_content)
+    
     pdf_hash = pdf_helpers.get_pdf_hash(pdf_content)
     index_path = f"faiss_index_{pdf_hash}.pkl"
-
+    
     if os.path.exists(index_path):
         with open(index_path, 'rb') as f:
             return pickle.load(f)
     else:
-        pdf_text = pdf_helpers.extract_text_from_pdf(pdf_content)
+        pdf_text = pdf_helpers.extract_text_from_pdf(pdf_file)
         chunks = pdf_helpers.chunk_text(pdf_text)
         embeddings = np.array([_chatbot.get_embedding(chunk) for chunk in chunks])
         faiss_index = create_faiss_index(embeddings)
-
+        
         data = {
             'index': faiss_index,
             'chunks': chunks
         }
-
+        
         with open(index_path, 'wb') as f:
             pickle.dump(data, f)
-
+        
         return data
 
 
