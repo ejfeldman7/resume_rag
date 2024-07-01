@@ -1,4 +1,6 @@
 import logging
+from typing import Any
+
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 from sentence_transformers import SentenceTransformer
 import torch
@@ -10,21 +12,43 @@ logger = logging.getLogger(__name__)
 
 
 class ResumeChatBot:
+    @staticmethod
     @st.cache_resource
-    def load_encoder(model: str):
-        return SentenceTransformer(model)
-    
+    def load_encoder(_model: str) -> Any:
+        return SentenceTransformer(_model)
+ 
+    @staticmethod
     @st.cache_resource
-    def load_generator(model: str):
-        return AutoModelForSeq2SeqLM.from_pretrained(model, torch_dtype=torch.float16, low_cpu_mem_usage=True)
+    def load_generator(_model: str) -> Any:
+        return AutoModelForSeq2SeqLM.from_pretrained(_model, torch_dtype=torch.float16, low_cpu_mem_usage=True)
 
+    @staticmethod
+    @st.cache_resource
+    def load_tokenizer(_model: str) -> Any:
+        return AutoTokenizer.from_pretrained(_model)
+    
     def __init__(self, encoder: str = "paraphrase-MiniLM-L6-v2", generator: str = "google/flan-t5-small"):
-        self.encoder = self.load_encoder(encoder)
-        logger.info(f"Encoder for ({encoder}) loaded successfully")
-        self.generator = self.load_generator(generator)
-        logger.info(f"Generator for ({generator}) loaded successfully")
-        self.tokenizer = AutoTokenizer.from_pretrained(encoder)
-        logger.info(f"Tokenizer for ({generator}) loaded successfully")
+        try:
+            self.encoder = self.load_encoder(encoder)
+            logger.info(f"Encoder for ({encoder}) loaded successfully")
+        except Exception as e:
+            logger.error(f"Failed to load encoder ({encoder}): {str(e)}")
+            raise
+
+        try:
+            self.generator = self.load_generator(generator)
+            logger.info(f"Generator for ({generator}) loaded successfully")
+        except Exception as e:
+            logger.error(f"Failed to load generator ({generator}): {str(e)}")
+            raise
+
+        try:
+            self.tokenizer = self.load_tokenizer(generator)
+            logger.info(f"Tokenizer for ({generator}) loaded successfully")
+        except Exception as e:
+            logger.error(f"Failed to load tokenizer for ({generator}): {str(e)}")
+            raise
+
         self.generator.eval()
 
     def extract_key_facts(self, text: str):
