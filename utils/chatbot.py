@@ -12,15 +12,15 @@ logger = logging.getLogger(__name__)
 
 
 class ResumeChatBot:
-    @staticmethod
-    @st.cache_resource
-    def load_encoder(_model: str) -> Any:
-        return SentenceTransformer(_model)
+    # @staticmethod
+    # @st.cache_resource
+    # def load_encoder(_model: str) -> Any:
+    #     return SentenceTransformer(_model)
 
     @staticmethod
     @st.cache_resource
     def load_generator(_model: str) -> Any:
-        return AutoModelForSeq2SeqLM.from_pretrained(_model, torch_dtype=torch.float16, low_cpu_mem_usage=True)
+        return AutoModelForSeq2SeqLM.from_pretrained(_model, low_cpu_mem_usage=True)  # torch_dtype=torch.float16
 
     @staticmethod
     @st.cache_resource
@@ -28,12 +28,12 @@ class ResumeChatBot:
         return AutoTokenizer.from_pretrained(_model)
 
     def __init__(self, encoder: str = "paraphrase-MiniLM-L6-v2", generator: str = "google/flan-t5-small"):
-        try:
-            self.encoder = self.load_encoder(encoder)
-            logger.info(f"Encoder for ({encoder}) loaded successfully")
-        except Exception as e:
-            logger.error(f"Failed to load encoder ({encoder}): {str(e)}")
-            raise
+        # try:
+        #     self.encoder = self.load_encoder(encoder)
+        #     logger.info(f"Encoder for ({encoder}) loaded successfully")
+        # except Exception as e:
+        #     logger.error(f"Failed to load encoder ({encoder}): {str(e)}")
+        #     raise
 
         try:
             self.generator = self.load_generator(generator)
@@ -71,7 +71,11 @@ class ResumeChatBot:
             numpy.ndarray: Embedding for the input text
         '''
         logger.info(f"Getting embedding for text: {text[:10]}...")
-        return self.encoder.encode(text)
+        inputs = self.tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=512)
+        with torch.no_grad():
+            logger.info("Generating torch embeddings for text")
+            outputs = self.generator.encoder(**inputs, output_hidden_states=True)
+        return outputs.last_hidden_state.mean(dim=1).squeeze().numpy()
 
     def select_relevant_chunks(self, query: str, chunks: list, top_n: int = 3):
         '''
@@ -112,10 +116,10 @@ Question: {question}
 
 Answer:"""
 
-        inputs = self.tokenizer(prompt, return_tensors="pt", max_length=512, truncation=True)
+        inputs = self.tokenizer(prompt, return_tensors="pt", max_length=1024, truncation=True)
         outputs = self.generator.generate(
             **inputs,
-            max_length=150,
+            max_length=200,
             num_return_sequences=1,
             do_sample=True,
             temperature=0.7,
@@ -124,11 +128,12 @@ Answer:"""
         )
         response = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
 
-        key_facts = self.extract_key_facts(response)
-        for fact in key_facts:
-            if fact.lower() not in context.lower():
-                response += f"\n\nNote: Expected to something about {fact}, this answer may not be trustworthy."
-                break
+        # TODO: Improve this logic to check if the answer is reliable. Not useful currently
+        # key_facts = self.extract_key_facts(response)
+        # for fact in key_facts:
+        #     if fact.lower() not in context.lower():
+        #         response += f"\n\nNote: Expected to something about {fact}, this answer may not be trustworthy."
+        #         break
 
         return response
 

@@ -26,8 +26,8 @@ if 'current_pdf_data' in locals():
     user_query = st.text_input("Ask a question about the resume:")
     if user_query:
         relevant_chunks = chatbot.select_relevant_chunks(user_query, current_pdf_data['chunks'], top_n=3)
-        # relevant_chunks = vector_search.find_most_similar_chunks_faiss(user_query, current_pdf_data['index'], current_pdf_data['chunks'], chatbot, top_n=3)
-        context = " ".join(relevant_chunks)
+        faiss_chunks = vector_search.find_most_similar_chunks_faiss(user_query, current_pdf_data['index'], current_pdf_data['chunks'], chatbot, top_n=3)
+        context = " ".join(relevant_chunks+faiss_chunks)
         response = chatbot.get_response(context, user_query)
         st.write("Chatbot:", response)
 
