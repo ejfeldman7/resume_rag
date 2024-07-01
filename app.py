@@ -1,13 +1,13 @@
 import streamlit as st
 
-from utils.chatbot import ResumeChatBot
+from utils.chatbot import ResumeChatBot, initialize_chatbot
 from utils import pdf_helpers
 from utils import vector_search
 
 
 st.title("Resume-based Chatbot")
 
-chatbot = ResumeChatBot()
+chatbot = initialize_chatbot()
 
 preexisting_pdfs = pdf_helpers.load_preexisting_pdfs(chatbot)
 
@@ -29,3 +29,7 @@ if 'current_pdf_data' in locals():
         context = " ".join(relevant_chunks)
         response = chatbot.get_response(context, user_query)
         st.write("Chatbot:", response)
+    
+        if st.session_state.get('query_count', 0) % 5 == 0:
+            st.cache_resource.clear()
+        st.session_state['query_count'] = st.session_state.get('query_count', 0) + 1

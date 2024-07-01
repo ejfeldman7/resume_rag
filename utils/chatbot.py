@@ -1,6 +1,7 @@
 import logging
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 import torch
+import streamlit as st
 
 
 logging.basicConfig(level=logging.INFO)
@@ -8,11 +9,16 @@ logger = logging.getLogger(__name__)
 
 
 class ResumeChatBot:
-    def __init__(self, model_name:str="google/flan-t5-base"):
+    @st.cache_resource
+    def load_model(model_name):
+        return AutoModelForSeq2SeqLM.from_pretrained(model_name, torch_dtype=torch.float16, low_cpu_mem_usage=True)
+
+    def __init__(self, model_name: str = "google/flan-t5-base"):
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         logger.info(f"Tokenizer for ({model_name}) loaded successfully")
         self.model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
         logger.info(f"Model ({model_name}) loaded successfully")
+        self.model.eval()
 
     def extract_key_facts(self, text: str):
         '''
@@ -22,10 +28,10 @@ class ResumeChatBot:
         Returns:
             list: List of key facts extracted from the input text
         '''
-        #TODO: NER or other NLP techniques for better extraction.
+        # TODO: NER or other NLP techniques for better extraction.
         return [phrase.strip() for phrase in text.split(',')]
 
-    def get_embedding(self, text:str):
+    def get_embedding(self, text: str):
         '''
         Generates embeddings for the input text string
         Args:
@@ -40,7 +46,8 @@ class ResumeChatBot:
             outputs = self.model.encoder(**inputs, output_hidden_states=True)
         return outputs.last_hidden_state.mean(dim=1).squeeze().numpy()
 
-    def get_response(self, context:str, question:str):
+    @torch.no_grad()
+    def get_response(self, context: str, question: str):
         '''
         Generates response for the input question given the context of the conversation
         Args:
@@ -59,8 +66,16 @@ Question: {question}
 
 Answer:"""
 
-        inputs = self.tokenizer(prompt, return_tensors="pt", max_length=1024, truncation=True)
-        outputs = self.model.generate(**inputs, max_length=200, num_return_sequences=1, no_repeat_ngram_size=2, temperature=0.7)
+        inputs = self.tokenizer(prompt, return_tensors="pt", max_length=512, truncation=True)
+        outputs = self.model.generate(
+            **inputs,
+            max_length=150,
+            num_return_sequences=1,
+            do_sample=True,
+            temperature=0.7,
+            top_k=50,
+            top_p=0.95,
+        )
         response = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
 
         # Simple fact-checking
@@ -71,3 +86,8 @@ Answer:"""
                 break
 
         return response
+
+
+@st.cache_resource
+def initialize_chatbot():
+    return ResumeChatBot()
