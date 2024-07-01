@@ -28,10 +28,10 @@ def load_or_create_faiss_index(pdf_path_or_content: str, _chatbot: ResumeChatBot
         with open(pdf_path_or_content, 'rb') as f:
             pdf_content = f.read()
         pdf_file = io.BytesIO(pdf_content)
-    
+
     pdf_hash = pdf_helpers.get_pdf_hash(pdf_content)
     index_path = f"faiss_index_{pdf_hash}.pkl"
-    
+
     if os.path.exists(index_path):
         with open(index_path, 'rb') as f:
             return pickle.load(f)
@@ -40,15 +40,15 @@ def load_or_create_faiss_index(pdf_path_or_content: str, _chatbot: ResumeChatBot
         chunks = pdf_helpers.chunk_text(pdf_text)
         embeddings = np.array([_chatbot.get_embedding(chunk) for chunk in chunks])
         faiss_index = create_faiss_index(embeddings)
-        
+
         data = {
             'index': faiss_index,
             'chunks': chunks
         }
-        
+
         with open(index_path, 'wb') as f:
             pickle.dump(data, f)
-        
+
         return data
 
 
@@ -66,6 +66,23 @@ def find_most_similar_chunk_faiss(query: str, index: faiss.IndexFlatL2, chunks: 
     query_embedding = _chatbot.get_embedding(query).reshape(1, -1)
     _, indices = index.search(query_embedding, 1)
     return chunks[indices[0][0]]
+
+
+def find_most_similar_chunks_faiss(query: str, index: faiss.IndexFlatL2, chunks: str, chatbot: ResumeChatBot, top_n: int=3):
+        '''
+    Finds the most similar top n chunks to the input query using FAISS index
+    Args:
+        query (str): Input query
+        index (faiss.IndexFlatL2): FAISS index for the chunks
+        chunks (str): List of text chunks
+        chatbot (ResumeChatBot): Chatbot object
+        top_n (int): Number of similar chunks to return
+    Returns:
+        str: Most similar chunk to the input query
+    '''
+    query_embedding = chatbot.get_embedding(query).reshape(1, -1)
+    _, indices = index.search(query_embedding, top_n)
+    return [chunks[i] for i in indices[0]]
 
 
 def create_faiss_index(embeddings: np.ndarray):
