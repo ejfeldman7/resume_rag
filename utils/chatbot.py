@@ -27,7 +27,7 @@ class ResumeChatBot:
     def load_tokenizer(_model: str) -> Any:
         return AutoTokenizer.from_pretrained(_model)
 
-    def __init__(self, encoder: str = "paraphrase-MiniLM-L6-v2", generator: str = "google/flan-t5-small"):
+    def __init__(self, encoder: str = "paraphrase-MiniLM-L6-v2", generator: str = "google/flan-t5-base"):
         # try:
         #     self.encoder = self.load_encoder(encoder)
         #     logger.info(f"Encoder for ({encoder}) loaded successfully")
