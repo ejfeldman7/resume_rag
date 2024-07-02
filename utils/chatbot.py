@@ -2,7 +2,7 @@ import logging
 from typing import Any
 
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
-from sentence_transformers import SentenceTransformer  # type: ignore
+# from sentence_transformers import SentenceTransformer  # type: ignore
 import torch
 import streamlit as st
 import numpy as np
