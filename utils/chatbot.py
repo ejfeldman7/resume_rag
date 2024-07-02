@@ -122,9 +122,9 @@ Answer:"""
             max_length=200,
             num_return_sequences=1,
             do_sample=True,
-            temperature=0.7,
-            top_k=50,
-            top_p=0.95,
+            temperature=0.5,
+            top_k=30,
+            top_p=0.90,
         )
         response = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
 
