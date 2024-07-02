@@ -29,4 +29,8 @@ This directory contains the default PDF resume file to be used for for augmented
 ## Future Work
 Currently, responses from the chatbot are generally on topic, but leave room for improvement. Much of the limiting factors come to memory constraints and trying to balance
 having a smaller model with generating meaningful results. This could ideally be alleviated by deploying the model in a separate location or using an existing API for a larger
-model that is more powerful. Those implementations may not be free, so they were not pursued in this initial approach. 
+model that is more powerful. Those implementations may not be free, so they were not pursued in this initial approach.
+
+## Notes
+
+- GitHub actions free tier was used up quickly in some initial runs that had a build test for the Streamlit app. This has been adjusted to only run on Pull Requests in the future, which will be the process for changes going forward.
