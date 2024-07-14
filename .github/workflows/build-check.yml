@@ -26,4 +26,4 @@ jobs:
 
       - name: Check Streamlit app builds
         run: |
-          streamlit run app.py --server.headless true
+          timeout 30s streamlit run app.py --server.headless true || code=$?; if [[ $code -ne 124 && $code -ne 0 ]]; then exit $code; fi
