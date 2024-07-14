@@ -27,9 +27,7 @@ Functions here include loading or creating our FAISS indices and finding our mos
 This directory contains the default PDF resume file to be used for for augmented generation.
 
 ## Future Work
-Currently, responses from the chatbot are generally on topic, but leave room for improvement. Much of the limiting factors come to memory constraints and trying to balance
-having a smaller model with generating meaningful results. This could ideally be alleviated by deploying the model in a separate location or using an existing API for a larger
-model that is more powerful. Those implementations may not be free, so they were not pursued in this initial approach.
+Currently, responses from the chatbot are generally on topic, but leave room for improvement. Much of the limiting factors come to memory constraints and trying to balance having a smaller model with generating meaningful results. This could ideally be alleviated by deploying the model in a separate location or using an existing API for a larger model that is more powerful. Those implementations may not be free, so they were not pursued in this initial approach but adding credits to OpenAI and using GPT 3.5 will likely be a future approach. 
 
 ## Notes
 
